@@ -101,6 +101,7 @@ tr:hover td{background:#fafcff}
 </div>
 <div id="lov"><div class="sp"></div><div id="lmsg">データを取得中...</div></div>
 <script>
+var WORKER='https://late-dream-ea83.t-danjo.workers.dev';
 function C(){return{sub:localStorage.getItem('kn_s')||'',tok:localStorage.getItem('kn_t')||''};}
 function saveAndLoad(){
   var s=document.getElementById('i-sub').value.trim();
@@ -115,7 +116,8 @@ async function kGet(app,query,fields){
   var c=C();
   var p=new URLSearchParams({app:app,query:query,totalCount:'true'});
   (fields||[]).forEach(function(f){p.append('fields[]',f);});
-  var r=await fetch('https://'+c.sub+'.cybozu.com/k/v1/records.json?'+p,{headers:{'X-Cybozu-API-Token':c.tok}});
+  var kurl='https://'+c.sub+'.cybozu.com/k/v1/records.json?'+p;
+  var r=await fetch(WORKER+'?url='+encodeURIComponent(kurl)+'&token='+encodeURIComponent(c.tok));
   if(!r.ok){var e=await r.json().catch(function(){return{};});throw new Error(e.message||'HTTP '+r.status);}
   return r.json();
 }
@@ -170,7 +172,8 @@ async function dlFile(key,name){
   btn.disabled=true;
   btn.innerHTML='<span class="sps"></span> 取得中...';
   try{
-    var r=await fetch('https://'+c.sub+'.cybozu.com/k/v1/file.json?fileKey='+key,{headers:{'X-Cybozu-API-Token':c.tok}});
+    var kurl='https://'+c.sub+'.cybozu.com/k/v1/file.json?fileKey='+key;
+    var r=await fetch(WORKER+'?url='+encodeURIComponent(kurl)+'&token='+encodeURIComponent(c.tok));
     if(!r.ok){var e=await r.json().catch(function(){return{};});throw new Error(e.message||'HTTP '+r.status);}
     var blob=await r.blob();
     var a=document.createElement('a');
