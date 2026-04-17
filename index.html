@@ -15,7 +15,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI"
 #cfg-banner h3{font-size:14px;font-weight:700;color:#7a5c00;margin-bottom:6px}
 #cfg-banner p{font-size:13px;color:#6a5200;margin-bottom:12px;line-height:1.65}
 .cr{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
-.cr label{font-size:13px;color:#5a4a00;width:160px;flex-shrink:0}
+.cr label{font-size:13px;color:#5a4a00;width:200px;flex-shrink:0}
 .cr input{flex:1;min-width:240px;max-width:420px;padding:7px 11px;font-size:13px;font-family:monospace;border:1px solid #ddd;border-radius:6px;background:#fff}
 .cr input:focus{outline:2px solid #1a73e8;border-color:transparent}
 #sv-btn{margin-top:6px;padding:8px 22px;background:#1a73e8;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer}
@@ -72,8 +72,12 @@ tr:hover td{background:#fafcff}
     <input id="i-sub" type="text" placeholder="例：ajhdof342k8c">
   </div>
   <div class="cr">
-    <label>APIトークン（アプリ416・417共通）</label>
-    <input id="i-tok" type="password" placeholder="APIトークンを貼り付け">
+    <label>APIトークン（アプリ416：関連レコード）</label>
+    <input id="i-tok416" type="password" placeholder="アプリ416のAPIトークン">
+  </div>
+  <div class="cr">
+    <label>APIトークン（アプリ417：OLD・OLDER）</label>
+    <input id="i-tok417" type="password" placeholder="アプリ417のAPIトークン">
   </div>
   <button id="sv-btn" onclick="saveAndLoad()">保存してデータを読み込む</button>
 </div>
@@ -84,8 +88,6 @@ tr:hover td{background:#fafcff}
     <span class="title">スケジュール表</span>
     <span class="sub">更新者：檀上 尚居　　更新日：2026年4月1日</span>
   </div>
-
-  <!-- 関連レコード（アプリ416） -->
   <div class="section">
     <div class="sec-hd" onclick="toggleSection('s416')">
       <h2>📋 最新の月間スケジュール表</h2>
@@ -99,8 +101,6 @@ tr:hover td{background:#fafcff}
       </table>
     </div>
   </div>
-
-  <!-- OLD -->
   <div class="section">
     <div class="sec-hd" onclick="toggleSection('sold')">
       <h2>📁 OLD（2026年度）</h2>
@@ -109,13 +109,11 @@ tr:hover td{background:#fafcff}
     </div>
     <div class="sec-body" id="sold">
       <table>
-        <thead><tr><th style="width:52%">ファイル名</th><th>サイズ</th><th style="width:130px;text-align:center">ダウンロード</th></tr></thead>
-        <tbody id="tbold"></tbody>
+        <thead><tr><th style="width:52%">ファイル名</th><th>更新日時</th><th style="width:130px;text-align:center">ダウンロード</th></tr></thead>
+        <tbody id="tbold"><tr><td colspan="3" style="padding:2rem;text-align:center;color:#bbb;font-size:13px;">読み込み中...</td></tr></tbody>
       </table>
     </div>
   </div>
-
-  <!-- OLDER -->
   <div class="section">
     <div class="sec-hd collapsed" onclick="toggleSection('solder')">
       <h2>📂 OLDER（過去年度）</h2>
@@ -124,49 +122,16 @@ tr:hover td{background:#fafcff}
     </div>
     <div class="sec-body hidden" id="solder">
       <table>
-        <thead><tr><th style="width:52%">ファイル名</th><th>サイズ</th><th style="width:130px;text-align:center">ダウンロード</th></tr></thead>
-        <tbody id="tbolder"></tbody>
+        <thead><tr><th style="width:52%">ファイル名</th><th>更新日時</th><th style="width:130px;text-align:center">ダウンロード</th></tr></thead>
+        <tbody id="tbolder"><tr><td colspan="3" style="padding:2rem;text-align:center;color:#bbb;font-size:13px;">読み込み中...</td></tr></tbody>
       </table>
     </div>
   </div>
-
 </div>
 <div id="lov"><div class="sp"></div><div id="lmsg">データを取得中...</div></div>
 <script>
 var WORKER='https://late-dream-ea83.t-danjo.workers.dev';
-var OLD_FILES=[
-  {name:'202601月間シフト表.xlsx',key:'20260202005619FB08ECB8660F4D6E95E35EA3AFE8D946190',size:32515},
-  {name:'202602月間シフト表.xlsx',key:'20260227003442F45B87F723764854B4328DBB6599667C054',size:31295},
-  {name:'202603月間シフト表.xlsx',key:'202604010025009BCCFA93275342B495952585ECC31799080',size:33297}
-];
-var OLDER_FILES=[
-  {name:'202401月間シフト表.xlsx',key:'20241224030304E6CB9954089A4A41852238B7AB9E73FC090',size:31979},
-  {name:'202402月間シフト表.xlsx',key:'20241224030304FA51B3CCA30A4A729694CFEB8900EC8C229',size:31277},
-  {name:'202403月間シフト表.xlsx',key:'2024122403030467BE2C28AA0D4B1E99FA7E9658363E43170',size:32554},
-  {name:'202404月間シフト表.xlsx',key:'20241224030304AB3D5BA5D4094BA6AE722682C33109ED031',size:31836},
-  {name:'202405月間シフト表.xlsx',key:'202412240303040850BDB62B704B83A4F6E05D39FCBA24172',size:33420},
-  {name:'202406月間シフト表.xlsx',key:'202412240303046511DC5FE2AE485A928D9D9666DFFCFE031',size:33401},
-  {name:'202407月間シフト表.xlsx',key:'2024122403030458D89DF482874638BD74D4B34A46E289319',size:32534},
-  {name:'202408月間シフト表.xlsx',key:'20250203002924B28B96CA69FA4028963A388F690A1429211',size:32977},
-  {name:'202409月間シフト表.xlsx',key:'20250203002929D209341E7B0A46638F18D2F7C076D5A2006',size:32818},
-  {name:'202410月間シフト表.xlsx',key:'202503030032352206A0463D0D44ABA25A4773BC622651251',size:33242},
-  {name:'202411月間シフト表.xlsx',key:'2025033100395761A1603F74624318986789C3365EBA7C008',size:31533},
-  {name:'202412月間シフト表.xlsx',key:'20250331004013D6052E00395A40E0AB7AA7B30449A4E1216',size:31961},
-  {name:'202501月間シフト表.xlsx',key:'202602060135107413A6AE8FF344D084A7F2BE32D2DDEA304',size:31192},
-  {name:'202502月間シフト表.xlsx',key:'20260206013515247B5F1B1CC04EA598B6CEF42D36D149165',size:29775},
-  {name:'202503月間シフト表.xlsx',key:'2026020601351962B2ABF7EFD44A518D5ADC4897C48224259',size:31710},
-  {name:'202504月間シフト表.xlsx',key:'20260206013523A9AECCE7E8E740F283B683AED321FCED164',size:31752},
-  {name:'202505月間シフト表.xlsx',key:'20260206013527C8EE6C238A9D4E15A618066F1896D59A354',size:33205},
-  {name:'202506月間シフト表.xlsx',key:'202602060135313822314AC3284936931018799D3E78C2209',size:32044},
-  {name:'202507月間シフト表.xlsx',key:'2026020601353566D2E6BB5C3246BE987635CA7ABA8EAC195',size:32425},
-  {name:'202508月間シフト表.xlsx',key:'202602060135407D86734B06E34B6B877753E781BF7704239',size:32156},
-  {name:'202509月間シフト表.xlsx',key:'2026020601354457BA86ECE3754A06A1B56D875BC09FCF118',size:32231},
-  {name:'202510月間シフト表.xlsx',key:'20260206013548D094BCF335A24D198E59D52CC80BE78C318',size:32886},
-  {name:'202511月間シフト表.xlsx',key:'20260206013551F16FE31B68CD4F73B7F3E6BEC73B36B6313',size:31955},
-  {name:'202512月間シフト表.xlsx',key:'202602060135558FEE0A5DB5BA4D2580F4AD9F7A6154BB016',size:32119}
-];
-
-function C(){return{sub:localStorage.getItem('kn_s')||'',tok:localStorage.getItem('kn_t')||''};}
+function C(){return{sub:localStorage.getItem('kn_s')||'',tok416:localStorage.getItem('kn_t416')||'',tok417:localStorage.getItem('kn_t417')||''};}
 function toggleSection(id){
   var body=document.getElementById(id);
   var hd=body.previousElementSibling;
@@ -175,31 +140,34 @@ function toggleSection(id){
 }
 function saveAndLoad(){
   var s=document.getElementById('i-sub').value.trim();
-  var t=document.getElementById('i-tok').value.trim();
-  if(!s||!t){alert('サブドメインとAPIトークンを両方入力してください。');return;}
+  var t416=document.getElementById('i-tok416').value.trim();
+  var t417=document.getElementById('i-tok417').value.trim();
+  if(!s||!t416||!t417){alert('すべての項目を入力してください。');return;}
   localStorage.setItem('kn_s',s);
-  localStorage.setItem('kn_t',t);
+  localStorage.setItem('kn_t416',t416);
+  localStorage.setItem('kn_t417',t417);
   document.getElementById('cfg-banner').style.display='none';
   load();
 }
-async function kGet(app,query,fields){
+async function kGet(app,tok,query,fields){
   var c=C();
   var p=new URLSearchParams({app:app,query:query,totalCount:'true'});
   (fields||[]).forEach(function(f){p.append('fields[]',f);});
   var kurl='https://'+c.sub+'.cybozu.com/k/v1/records.json?'+p;
-  var r=await fetch(WORKER+'?url='+encodeURIComponent(kurl)+'&token='+encodeURIComponent(c.tok));
+  var r=await fetch(WORKER+'?url='+encodeURIComponent(kurl)+'&token='+encodeURIComponent(tok));
   if(!r.ok){var e=await r.json().catch(function(){return{};});throw new Error(e.message||'HTTP '+r.status);}
   return r.json();
 }
 async function load(){
   setL(true,'データを取得中...');
   clearE();
+  var c=C();
   try{
-    // 関連レコード（アプリ416）
+    // アプリ416：関連レコード（月別最新）
     var all=[],offset=0;
     while(true){
       setL(true,'関連レコード取得中... '+all.length+'件');
-      var d=await kGet('416','DOCGPNM = "スケジュール表" order by レコード番号 desc limit 100 offset '+offset,['$id','DOCFILE','更新日時']);
+      var d=await kGet('416',c.tok416,'DOCGPNM = "スケジュール表" order by レコード番号 desc limit 100 offset '+offset,['$id','DOCFILE','更新日時']);
       all=all.concat(d.records);
       if(d.records.length<100)break;
       if(all.length>=500)break;
@@ -216,12 +184,14 @@ async function load(){
       if(!seen.has(key))seen.set(key,{key:key,rec:rec,f:f});
     }
     var rows=Array.from(seen.values()).sort(function(a,b){return a.key.localeCompare(b.key,'ja');});
-    renderRelated(rows);
-    document.getElementById('cnt416').textContent=rows.length+'件';
+    renderRelated('tb416','cnt416',rows);
 
-    // OLD・OLDERは固定データをレンダリング
-    renderStatic('tbold','cntold',OLD_FILES);
-    renderStatic('tbolder','cntolder',OLDER_FILES);
+    // アプリ417：OLDフィールド
+    setL(true,'OLD・OLDERデータ取得中...');
+    var d417=await kGet('417',c.tok417,'レコード番号 = 2',['OLD','OLDER']);
+    var rec417=d417.records[0];
+    renderFiles('tbold','cntold',rec417.OLD.value);
+    renderFiles('tbolder','cntolder',rec417.OLDER.value);
 
   }catch(e){
     showE('データ取得に失敗しました：'+e.message);
@@ -236,24 +206,26 @@ function fmtS(b){return(parseInt(b)/1024).toFixed(0)+' KB';}
 function fileRow(fname,fkey,fsize,col2){
   return '<tr><td><div class="fnc"><div class="xi"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg></div><div><div class="fn">'+fname+'</div><div class="fsz">'+fmtS(fsize)+'</div></div></div></td><td class="dc">'+col2+'</td><td style="text-align:center"><button class="dl" id="b-'+fkey+'" onclick="dlFile(\''+fkey+'\',\''+fname+'\')"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v9M4 8l4 4 4-4M2 13h12"/></svg> ダウンロード</button></td></tr>';
 }
-function renderRelated(rows){
-  var tb=document.getElementById('tb416');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="3" style="padding:2rem;text-align:center;color:#bbb;">データなし</td></tr>';return;}
-  tb.innerHTML=rows.map(function(item){return fileRow(item.f.name,item.f.fileKey,item.f.size,fmtD(item.rec['更新日時'].value));}).join('');
+function renderRelated(tbid,cntid,rows){
+  document.getElementById(cntid).textContent=rows.length+'件';
+  if(!rows.length){document.getElementById(tbid).innerHTML='<tr><td colspan="3" style="padding:2rem;text-align:center;color:#bbb;">データなし</td></tr>';return;}
+  document.getElementById(tbid).innerHTML=rows.map(function(item){return fileRow(item.f.name,item.f.fileKey,item.f.size,fmtD(item.rec['更新日時'].value));}).join('');
 }
-function renderStatic(tbid,cntid,files){
+function renderFiles(tbid,cntid,files){
   document.getElementById(cntid).textContent=files.length+'件';
-  document.getElementById(tbid).innerHTML=files.map(function(f){return fileRow(f.name,f.key,f.size,fmtS(f.size));}).join('');
+  if(!files.length){document.getElementById(tbid).innerHTML='<tr><td colspan="3" style="padding:2rem;text-align:center;color:#bbb;">データなし</td></tr>';return;}
+  document.getElementById(tbid).innerHTML=files.map(function(f){return fileRow(f.name,f.fileKey,f.size,fmtS(f.size));}).join('');
 }
 async function dlFile(key,name){
   var c=C();
-  if(!c.sub||!c.tok){alert('接続情報を先に設定してください。');return;}
+  if(!c.sub){alert('接続情報を先に設定してください。');return;}
+  var tok=c.tok416||c.tok417;
   var btn=document.getElementById('b-'+key);
   btn.disabled=true;
   btn.innerHTML='<span class="sps"></span> 取得中...';
   try{
     var kurl='https://'+c.sub+'.cybozu.com/k/v1/file.json?fileKey='+key;
-    var r=await fetch(WORKER+'?url='+encodeURIComponent(kurl)+'&token='+encodeURIComponent(c.tok));
+    var r=await fetch(WORKER+'?url='+encodeURIComponent(kurl)+'&token='+encodeURIComponent(tok));
     if(!r.ok){var e=await r.json().catch(function(){return{};});throw new Error(e.message||'HTTP '+r.status);}
     var blob=await r.blob();
     var a=document.createElement('a');
@@ -269,14 +241,12 @@ function showE(msg){var e=document.getElementById('ebar');e.style.display='block
 function clearE(){document.getElementById('ebar').style.display='none';}
 (function(){
   var c=C();
-  if(c.sub&&c.tok){
+  if(c.sub&&c.tok416&&c.tok417){
     document.getElementById('i-sub').value=c.sub;
-    document.getElementById('i-tok').value=c.tok;
+    document.getElementById('i-tok416').value=c.tok416;
+    document.getElementById('i-tok417').value=c.tok417;
     document.getElementById('cfg-banner').style.display='none';
     load();
-  } else {
-    renderStatic('tbold','cntold',OLD_FILES);
-    renderStatic('tbolder','cntolder',OLDER_FILES);
   }
 })();
 </script>
