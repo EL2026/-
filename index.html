@@ -5,79 +5,194 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>スケジュール表</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
-  background: #f0f2f5; color: #1a1a1a; min-height: 100vh;
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI",sans-serif;background:#f0f2f5;color:#1a1a1a;min-height:100vh}
+.top-bar{background:#1a56a0;color:#fff;padding:0 2rem;height:54px;display:flex;align-items:center;gap:10px}
+.top-bar .logo{font-size:13px;font-weight:700;opacity:.8}
+.top-bar .sep{opacity:.3}
+.top-bar .ttl{font-size:16px;font-weight:600}
+#cfg-banner{background:#fffbe6;border-bottom:2px solid #f5c518;padding:1.25rem 2rem}
+#cfg-banner h3{font-size:14px;font-weight:700;color:#7a5c00;margin-bottom:6px}
+#cfg-banner p{font-size:13px;color:#6a5200;margin-bottom:12px;line-height:1.65}
+.cr{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.cr label{font-size:13px;color:#5a4a00;width:160px;flex-shrink:0}
+.cr input{flex:1;min-width:240px;max-width:420px;padding:7px 11px;font-size:13px;font-family:monospace;border:1px solid #ddd;border-radius:6px;background:#fff}
+.cr input:focus{outline:2px solid #1a73e8;border-color:transparent}
+#sv-btn{margin-top:6px;padding:8px 22px;background:#1a73e8;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer}
+#sv-btn:hover{background:#1558b0}
+.main{max-width:980px;margin:0 auto;padding:1.75rem 1.5rem}
+.rec-meta{background:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:14px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:1.5rem}
+.rec-meta .badge{background:#e8f0fe;color:#1a56a0;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px}
+.rec-meta .title{font-size:18px;font-weight:700}
+.rec-meta .sub{font-size:13px;color:#888}
+.section{background:#fff;border-radius:10px;border:1px solid #e0e0e0;overflow:hidden;margin-bottom:1.5rem}
+.sec-hd{background:#f7f9fc;border-bottom:1px solid #e8edf2;padding:12px 20px;display:flex;align-items:center;gap:10px}
+.sec-hd h2{font-size:14px;font-weight:700;color:#333}
+.sec-hd .cnt{background:#1a56a0;color:#fff;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px}
+table{width:100%;border-collapse:collapse}
+th{background:#f7f9fc;font-size:11px;font-weight:700;color:#888;text-align:left;padding:8px 16px;border-bottom:1px solid #eee;text-transform:uppercase;letter-spacing:.04em}
+td{padding:11px 16px;border-bottom:1px solid #f2f2f2;font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafcff}
+.fnc{display:flex;align-items:center;gap:10px}
+.xi{width:28px;height:28px;flex-shrink:0;background:#e8f5e9;border-radius:5px;display:flex;align-items:center;justify-content:center}
+.xi svg{width:15px;height:15px;stroke:#2e7d32}
+.fn{font-weight:600}
+.fsz{color:#999;font-size:12px}
+.dc{color:#666}
+.dl{padding:6px 16px;font-size:12px;font-weight:700;border:1.5px solid #1a73e8;border-radius:6px;background:transparent;color:#1a73e8;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;transition:background .12s}
+.dl:hover{background:#e8f0fe}
+.dl:disabled{opacity:.4;cursor:not-allowed}
+.dl.ok{border-color:#2e7d32;color:#2e7d32}
+.dl.ok:hover{background:#e8f5e9}
+.dl.er{border-color:#c62828;color:#c62828;font-size:11px;padding:6px 10px}
+#lov{position:fixed;inset:0;background:rgba(255,255,255,.88);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:200}
+.sp{width:42px;height:42px;border:4px solid #dde3ec;border-top-color:#1a56a0;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#lmsg{font-size:14px;color:#555}
+#ebar{display:none;background:#fdecea;border:1px solid #f5c6c0;border-radius:8px;padding:12px 16px;color:#b71c1c;font-size:13px;margin-bottom:1.25rem}
+.sps{display:inline-block;width:12px;height:12px;border:2px solid #ccc;border-top-color:#1a73e8;border-radius:50%;animation:sp .6s linear infinite;vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="top-bar">
+  <span class="logo">スケジュール管理</span>
+  <span class="sep">／</span>
+  <span class="ttl">月間シフト表</span>
+</div>
+<div id="cfg-banner">
+  <h3>⚙️ 初回設定：kintone 接続情報を入力してください</h3>
+  <p>ファイルをダウンロードするにはkintoneへの接続情報が必要です。入力内容はこのブラウザ内にのみ保存され、外部には一切送信されません。</p>
+  <div class="cr">
+    <label>サブドメイン</label>
+    <input id="i-sub" type="text" placeholder="例：ajhdof342k8c">
+  </div>
+  <div class="cr">
+    <label>APIトークン（アプリ416）</label>
+    <input id="i-tok" type="password" placeholder="kintone アプリ 416 の APIトークン">
+  </div>
+  <button id="sv-btn" onclick="saveAndLoad()">保存してデータを読み込む</button>
+</div>
+<div class="main">
+  <div id="ebar"></div>
+  <div class="rec-meta">
+    <span class="badge">スケジュール月間タイトル</span>
+    <span class="title">スケジュール表</span>
+    <span class="sub">更新者：檀上 尚居　　更新日：2026年4月1日</span>
+  </div>
+  <div class="section">
+    <div class="sec-hd">
+      <h2>📋 スケジュール — 月間シフト表（月別最新ファイル）</h2>
+      <span class="cnt" id="rcnt">—</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:52%">ファイル名</th>
+          <th>更新日時</th>
+          <th style="width:130px;text-align:center">ダウンロード</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="3" style="padding:2rem;text-align:center;color:#bbb;font-size:13px;">接続情報を入力するとデータが表示されます</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div id="lov"><div class="sp"></div><div id="lmsg">データを取得中...</div></div>
+<script>
+function C(){return{sub:localStorage.getItem('kn_s')||'',tok:localStorage.getItem('kn_t')||''};}
+function saveAndLoad(){
+  var s=document.getElementById('i-sub').value.trim();
+  var t=document.getElementById('i-tok').value.trim();
+  if(!s||!t){alert('サブドメインとAPIトークンを両方入力してください。');return;}
+  localStorage.setItem('kn_s',s);
+  localStorage.setItem('kn_t',t);
+  document.getElementById('cfg-banner').style.display='none';
+  load();
 }
-.top-bar {
-  background: #1a56a0; color: #fff;
-  padding: 0 2rem; height: 54px;
-  display: flex; align-items: center; gap: 10px;
+async function kGet(app,query,fields){
+  var c=C();
+  var p=new URLSearchParams({app:app,query:query,totalCount:'true'});
+  (fields||[]).forEach(function(f){p.append('fields[]',f);});
+  var r=await fetch('https://'+c.sub+'.cybozu.com/k/v1/records.json?'+p,{headers:{'X-Cybozu-API-Token':c.tok}});
+  if(!r.ok){var e=await r.json().catch(function(){return{};});throw new Error(e.message||'HTTP '+r.status);}
+  return r.json();
 }
-.top-bar .logo { font-size: 13px; font-weight: 700; opacity: .8; }
-.top-bar .sep  { opacity: .3; }
-.top-bar .ttl  { font-size: 16px; font-weight: 600; }
-#cfg-banner {
-  background: #fffbe6; border-bottom: 2px solid #f5c518;
-  padding: 1.25rem 2rem;
+async function load(){
+  setL(true,'スケジュールデータを取得中...');
+  clearE();
+  try{
+    var all=[],offset=0;
+    while(true){
+      setL(true,'データ取得中... '+all.length+'件');
+      var d=await kGet('416','DOCGPNM = "スケジュール表" order by レコード番号 desc limit 100 offset '+offset,['$id','DOCFILE','更新日時']);
+      all=all.concat(d.records);
+      if(d.records.length<100)break;
+      if(all.length>=500)break;
+      offset+=100;
+    }
+    var seen=new Map();
+    for(var i=0;i<all.length;i++){
+      var rec=all[i];
+      var files=rec.DOCFILE.value;
+      if(!files||!files.length)continue;
+      var f=files[0];
+      var m=f.name.match(/_(\d{2}月)/);
+      var key=m?m[1]:f.name;
+      if(!seen.has(key))seen.set(key,{key:key,rec:rec,f:f});
+    }
+    var rows=Array.from(seen.values()).sort(function(a,b){return a.key.localeCompare(b.key,'ja');});
+    render(rows);
+    document.getElementById('rcnt').textContent=rows.length+'件（月別最新）';
+  }catch(e){
+    showE('データ取得に失敗しました：'+e.message);
+    document.getElementById('rcnt').textContent='エラー';
+  }finally{setL(false);}
 }
-#cfg-banner h3 { font-size: 14px; font-weight: 700; color: #7a5c00; margin-bottom: 6px; }
-#cfg-banner p  { font-size: 13px; color: #6a5200; margin-bottom: 12px; line-height: 1.65; }
-.cr { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
-.cr label { font-size: 13px; color: #5a4a00; width: 160px; flex-shrink: 0; }
-.cr input {
-  flex:1; min-width:240px; max-width:420px;
-  padding:7px 11px; font-size:13px; font-family:monospace;
-  border:1px solid #ddd; border-radius:6px; background:#fff;
+function fmtD(iso){
+  if(!iso)return'—';
+  var d=new Date(iso);
+  return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
 }
-.cr input:focus { outline:2px solid #1a73e8; border-color:transparent; }
-#sv-btn {
-  margin-top:6px; padding:8px 22px;
-  background:#1a73e8; color:#fff; border:none;
-  border-radius:6px; font-size:14px; font-weight:600; cursor:pointer;
+function fmtS(b){return(parseInt(b)/1024).toFixed(0)+' KB';}
+function render(rows){
+  var tb=document.getElementById('tbody');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="3" style="padding:2rem;text-align:center;color:#bbb;font-size:13px;">関連レコードが見つかりませんでした</td></tr>';return;}
+  tb.innerHTML=rows.map(function(item){
+    return '<tr><td><div class="fnc"><div class="xi"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg></div><div><div class="fn">'+item.f.name+'</div><div class="fsz">'+fmtS(item.f.size)+'</div></div></div></td><td class="dc">'+fmtD(item.rec['更新日時'].value)+'</td><td style="text-align:center"><button class="dl" id="b-'+item.f.fileKey+'" onclick="dlFile(\''+item.f.fileKey+'\',\''+item.f.name+'\')"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v9M4 8l4 4 4-4M2 13h12"/></svg> ダウンロード</button></td></tr>';
+  }).join('');
 }
-#sv-btn:hover { background:#1558b0; }
-.main { max-width:980px; margin:0 auto; padding:1.75rem 1.5rem; }
-.rec-meta {
-  background:#fff; border-radius:10px; border:1px solid #e0e0e0;
-  padding:14px 20px; display:flex; gap:16px; align-items:center; flex-wrap:wrap;
-  margin-bottom:1.5rem;
+async function dlFile(key,name){
+  var c=C();
+  if(!c.sub||!c.tok){alert('接続情報を先に設定してください。');return;}
+  var btn=document.getElementById('b-'+key);
+  btn.disabled=true;
+  btn.innerHTML='<span class="sps"></span> 取得中...';
+  try{
+    var r=await fetch('https://'+c.sub+'.cybozu.com/k/v1/file.json?fileKey='+key,{headers:{'X-Cybozu-API-Token':c.tok}});
+    if(!r.ok){var e=await r.json().catch(function(){return{};});throw new Error(e.message||'HTTP '+r.status);}
+    var blob=await r.blob();
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download=name;a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href);},5000);
+    btn.classList.add('ok');btn.innerHTML='✓ 完了';btn.disabled=false;
+  }catch(e){
+    btn.classList.add('er');btn.innerHTML='✕ '+e.message;btn.disabled=false;
+  }
 }
-.rec-meta .badge {
-  background:#e8f0fe; color:#1a56a0;
-  font-size:11px; font-weight:700; padding:3px 10px; border-radius:99px;
-}
-.rec-meta .title { font-size:18px; font-weight:700; }
-.rec-meta .sub   { font-size:13px; color:#888; }
-.section {
-  background:#fff; border-radius:10px; border:1px solid #e0e0e0;
-  overflow:hidden; margin-bottom:1.5rem;
-}
-.sec-hd {
-  background:#f7f9fc; border-bottom:1px solid #e8edf2;
-  padding:12px 20px; display:flex; align-items:center; gap:10px;
-}
-.sec-hd h2 { font-size:14px; font-weight:700; color:#333; }
-.sec-hd .cnt {
-  background:#1a56a0; color:#fff;
-  font-size:11px; font-weight:700; padding:2px 9px; border-radius:99px;
-}
-table { width:100%; border-collapse:collapse; }
-th {
-  background:#f7f9fc; font-size:11px; font-weight:700; color:#888;
-  text-align:left; padding:8px 16px; border-bottom:1px solid #eee;
-  text-transform:uppercase; letter-spacing:.04em;
-}
-td { padding:11px 16px; border-bottom:1px solid #f2f2f2; font-size:13px; vertical-align:middle; }
-tr:last-child td { border-bottom:none; }
-tr:hover td { background:#fafcff; }
-.fnc { display:flex; align-items:center; gap:10px; }
-.xi {
-  width:28px; height:28px; flex-shrink:0;
-  background:#e8f5e9; border-radius:5px;
-  display:flex; align-items:center; justify-content:center;
-}
-.xi svg { width:15px; height:15px; stroke:#2e7d32; }
-.fn { font-weight:600; }
-.fsz { color:#99
+function setL(on,msg){var e=document.getElementById('lov');e.style.display=on?'flex':'none';if(msg)document.getElementById('lmsg').textContent=msg;}
+function showE(msg){var e=document.getElementById('ebar');e.style.display='block';e.textContent='⚠ '+msg;}
+function clearE(){document.getElementById('ebar').style.display='none';}
+(function(){
+  var c=C();
+  if(c.sub&&c.tok){
+    document.getElementById('i-sub').value=c.sub;
+    document.getElementById('i-tok').value=c.tok;
+    document.getElementById('cfg-banner').style.display='none';
+    load();
+  }
+})();
+</script>
+</body>
+</html>
